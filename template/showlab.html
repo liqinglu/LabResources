@@ -1,0 +1,372 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">  
+<html xmlns="http://www.w3.org/1999/xhtml">  
+<head>  
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />  
+<title>Puma ENB Status</title>  
+<style type="text/css">  
+<!--  
+body,div,p,ul,li,font,span,td,th{  
+font-size:10pt;  
+line-height:155%;  
+}  
+table{  
+border-top-width: 1px;  
+border-right-width: 1px;  
+border-bottom-width: 0px;  
+border-left-width: 1px;  
+border-top-style: solid;  
+border-right-style: solid;  
+border-bottom-style: none;  
+border-left-style: solid;  
+border-top-color: #CCCCCC;  
+border-right-color: #CCCCCC;  
+border-bottom-color: #CCCCCC;  
+border-left-color: #CCCCCC;  
+}  
+td{  
+border-bottom-width: 1px;  
+border-bottom-style: solid;  
+border-bottom-color: #CCCCCC;  
+}  
+.EditCell_TextBox {  
+width: 90%;  
+border:1px solid #0099CC;  
+}  
+.EditCell_DropDownList {  
+width: 90%;  
+}  
+-->  
+</style>  
+</head>  
+  
+<body>  
+<h3>ENB STATUS</h3>  
+<form id="form1" name="form1" method="post" action="">  
+<table width="1302" border="0" cellpadding="0" cellspacing="0" id="tabProduct">  
+    <tr>  
+      <th width="50" align="center" bgcolor="#EFEFEF" Name="Num"></th>  
+      <th width="50" bgcolor="#EFEFEF" Name="Identity" EditType="TextBox">ID</th>  
+      <th width="100" bgcolor="#EFEFEF" Name="ProductName" EditType="TextBox">ENB</th>
+      <th width="150" bgcolor="#EFEFEF" Name="Type" EditType="TextBox">Type</th>	 
+      <th width="100" bgcolor="#EFEFEF" Name="Location" EditType="TextBox">Location</th>	 
+      <th width="150" bgcolor="#EFEFEF" Name="IP" EditType="TextBox">IP address</th>  
+      <th width="100" bgcolor="#EFEFEF" Name="User" EditType="TextBox">CurrentUser</th>  
+	  <th width="400" bgcolor="#EFEFEF" Name="Status" EditType="TextBox">Status</th> 
+	  <th width="200" bgcolor="#EFEFEF" Name="Load" EditType="TextBox">Load</th> 
+    </tr>  
+	{% for row in rows %}
+	<tr>
+      <td align="center" bgcolor="#FFFFFF"><input type="checkbox" name="checkbox2" value="checkbox" /></td>  
+	  {% for col in cols %}
+	  <td bgcolor="#FFFFFF">{{ enbinfo[row][col] }}</td>  
+	  {% endfor %}
+	</tr>
+	{% endfor %}
+</table>  
+  
+<br />  
+<input type="button" name="Submit" value="Add" onclick="AddRow(document.getElementById('tabProduct'),1)" />  
+<input type="button" name="Submit2" value="Remove" onclick="DeleteRow(document.getElementById('tabProduct'),1)" />  
+<input type="button" value="Submit" onclick="GetTableData(document.getElementById('tabProduct'))"/>
+</form>  
+  
+<script language="javascript">
+function EditTables(){  
+for(var i=0;i<arguments.length;i++){  
+   SetTableCanEdit(arguments[i]);  
+}  
+}  
+  
+function SetTableCanEdit(table){  
+for(var i=1; i<table.rows.length;i++){  
+   SetRowCanEdit(table.rows[i]);  
+}  
+}  
+  
+function SetRowCanEdit(row){  
+for(var j=0;j<row.cells.length; j++){  
+  
+   var editType = row.cells[j].getAttribute("EditType");  
+   if(!editType){  
+    editType = row.parentNode.rows[0].cells[j].getAttribute("EditType");  
+   }  
+   if(editType){  
+    row.cells[j].onclick = function (){  
+     EditCell(this);  
+    }  
+   }  
+}  
+  
+}  
+  
+function EditCell(element, editType){  
+  
+var editType = element.getAttribute("EditType");  
+if(!editType){  
+   editType = element.parentNode.parentNode.rows[0].cells[element.cellIndex].getAttribute("EditType");  
+}  
+  
+switch(editType){  
+   case "TextBox":  
+    CreateTextBox(element, element.innerHTML);  
+    break;  
+   case "DropDownList":  
+    CreateDropDownList(element);  
+    break;  
+   default:  
+    break;  
+}  
+}  
+  
+function CreateTextBox(element, value){  
+var editState = element.getAttribute("EditState");  
+if(editState != "true"){  
+   var textBox = document.createElement("INPUT");  
+   textBox.type = "text";  
+   textBox.className="EditCell_TextBox";  
+    
+   if(!value){  
+    value = element.getAttribute("Value");  
+   }    
+   textBox.value = value;  
+    
+   textBox.onblur = function (){  
+    CancelEditCell(this.parentNode, this.value);  
+   }  
+   ClearChild(element);  
+   element.appendChild(textBox);  
+   textBox.focus();  
+   textBox.select();  
+    
+   element.setAttribute("EditState", "true");  
+   element.parentNode.parentNode.setAttribute("CurrentRow", element.parentNode.rowIndex);  
+}  
+  
+}  
+  
+  
+function CreateDropDownList(element, value){  
+var editState = element.getAttribute("EditState");  
+if(editState != "true"){  
+   var downList = document.createElement("Select");  
+   downList.className="EditCell_DropDownList";  
+    
+   var items = element.getAttribute("DataItems");  
+   if(!items){  
+    items = element.parentNode.parentNode.rows[0].cells[element.cellIndex].getAttribute("DataItems");  
+   }  
+    
+   if(items){  
+    items = eval("[" + items + "]");  
+    for(var i=0; i<items.length; i++){  
+     var oOption = document.createElement("OPTION");  
+     oOption.text = items[i].text;  
+     oOption.value = items[i].value;  
+     downList.options.add(oOption);  
+    }  
+   }  
+    
+   if(!value){  
+    value = element.getAttribute("Value");  
+   }  
+   downList.value = value;  
+  
+   downList.onblur = function (){  
+    CancelEditCell(this.parentNode, this.value, this.options[this.selectedIndex].text);  
+   }  
+    
+   ClearChild(element);  
+   element.appendChild(downList);  
+   downList.focus();  
+    
+   element.setAttribute("EditState", "true");  
+   element.parentNode.parentNode.setAttribute("LastEditRow", element.parentNode.rowIndex);  
+}  
+  
+}  
+  
+function CancelEditCell(element, value, text){  
+element.setAttribute("Value", value);  
+if(text){  
+   element.innerHTML = text;  
+}else{  
+   element.innerHTML = value;  
+}  
+element.setAttribute("EditState", "false");  
+  
+CheckExpression(element.parentNode);  
+}  
+  
+function ClearChild(element){  
+element.innerHTML = "";  
+}  
+  
+function AddRow(table, index){  
+	var lastRow = table.rows[table.rows.length-1];  
+	var newRow = lastRow.cloneNode(true); 
+	table.tBodies[0].appendChild(newRow);  
+	SetRowCanEdit(newRow);
+	if (lastRow.cells[1].innerHTML == '') {
+		newRow.cells[1].innerHTML = 1
+	}
+	else {
+		newRow.cells[1].innerHTML = isNaN(lastRow.cells[1].innerHTML)?1:(parseInt(lastRow.cells[1].innerHTML)+1);
+	}
+	//alert("value : "+newRow.cells[1].innerHTML);
+	return newRow;  
+}  
+  
+  
+function DeleteRow(table, index){  
+for(var i=table.rows.length - 1; i>0;i--){  
+   var chkOrder = table.rows[i].cells[0].firstChild;  
+   if(chkOrder){  
+    if(chkOrder.type = "CHECKBOX"){  
+     if(chkOrder.checked){  
+      table.deleteRow(i);  
+     }  
+    }  
+   }  
+}  
+}  
+  
+function GetTableData(table){  
+	//var tableData = new Array();  
+
+	var target = '_blank';
+	var tempForm = document.createElement("form");  
+    tempForm.id = "tempForm1";  
+    tempForm.method = "post";  
+    tempForm.action = "";  
+    tempForm.target = target; 
+	  
+	for(var i=1; i<table.rows.length;i++){
+		var rowdata = GetRowData(tabProduct.rows[i]);
+		for(var elem in rowdata){
+			var hideInput = document.createElement("input");  
+		    hideInput.type = "hidden";  
+		    hideInput.name = elem;  
+		    hideInput.value = rowdata[elem];
+			//alert("hideinput = "+rowdata[elem]);
+		    tempForm.appendChild(hideInput);
+		}
+		//tableData.push(GetRowData(tabProduct.rows[i]));  
+	}
+	//alert("submit"+tabProduct.rows[0]);
+	//document.forms[0].submit();
+	//return tableData;  
+
+	document.body.appendChild(tempForm);  
+	//alert("cc"+hideInput);
+    tempForm.submit();  
+    document.body.removeChild(tempForm); 
+}
+  
+function GetRowData(row){  
+var rowData = {};  
+//alert("getrowdata"+row.cells.length)
+for(var j=1;j<row.cells.length; j++){  
+   name = row.parentNode.rows[0].cells[j].getAttribute("Name");  
+   if(name){  
+    var value = row.cells[j].getAttribute("Value");  
+	//alert("begin value "+value);
+    if(!value){  
+     value = row.cells[j].innerHTML;
+	 //alert("in if "+value);
+    }  
+     
+    rowData[name] = value;  
+   }  
+}  
+   //alert("data : "+rowData);
+return rowData;  
+  
+}  
+  
+function CheckExpression(row){  
+for(var j=0;j<row.cells.length; j++){  
+   expn = row.parentNode.rows[0].cells[j].getAttribute("Expression");  
+   if(expn){  
+    var result = Expression(row,expn);  
+    var format = row.parentNode.rows[0].cells[j].getAttribute("Format");  
+    if(format){  
+     row.cells[j].innerHTML = formatNumber(Expression(row,expn), format);  
+    }else{  
+     row.cells[j].innerHTML = Expression(row,expn);  
+    }  
+   }  
+    
+}  
+}  
+  
+function Expression(row, expn){  
+var rowData = GetRowData(row);  
+for(var j=0;j<row.cells.length; j++){  
+   name = row.parentNode.rows[0].cells[j].getAttribute("Name");  
+   if(name){  
+    var reg = new RegExp(name, "i");  
+    expn = expn.replace(reg, rowData[name].replace(/\,/g, ""));  
+   }  
+}  
+return eval(expn);  
+}  
+  
+function formatNumber(num,pattern){    
+var strarr = num?num.toString().split('.'):['0'];    
+var fmtarr = pattern?pattern.split('.'):[''];    
+var retstr='';    
+    
+var str = strarr[0];    
+var fmt = fmtarr[0];    
+var i = str.length-1;      
+var comma = false;    
+for(var f=fmt.length-1;f>=0;f--){    
+    switch(fmt.substr(f,1)){    
+      case '#':    
+        if(i>=0 ) retstr = str.substr(i--,1) + retstr;    
+        break;    
+      case '0':    
+        if(i>=0) retstr = str.substr(i--,1) + retstr;    
+        else retstr = '0' + retstr;    
+        break;    
+      case ',':    
+        comma = true;    
+        retstr=','+retstr;    
+        break;    
+    }    
+}    
+if(i>=0){    
+    if(comma){    
+      var l = str.length;    
+      for(;i>=0;i--){    
+        retstr = str.substr(i,1) + retstr;    
+        if(i>0 && ((l-i)%3)==0) retstr = ',' + retstr;     
+      }    
+    }    
+    else retstr = str.substr(0,i+1) + retstr;    
+}    
+    
+retstr = retstr+'.';    
+str=strarr.length>1?strarr[1]:'';    
+fmt=fmtarr.length>1?fmtarr[1]:'';    
+i=0;    
+for(var f=0;f<fmt.length;f++){    
+    switch(fmt.substr(f,1)){    
+      case '#':    
+        if(i<str.length) retstr+=str.substr(i++,1);    
+        break;    
+      case '0':    
+        if(i<str.length) retstr+= str.substr(i++,1);    
+        else retstr+='0';    
+        break;    
+    }    
+}    
+return retstr.replace(/^,+/,'').replace(/\.$/,'');    
+} 
+</script>  
+<script language="javascript">  
+var tabProduct = document.getElementById("tabProduct");  
+EditTables(tabProduct);  
+</script>  
+</body>  
+</html> 

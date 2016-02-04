@@ -1,9 +1,12 @@
+# -*- coding: utf-8 -*-
+
 import re
 from response import *
+from cgi import parse_qs,escape
 
 urls = (
           ("/","root"),
-          ("/hello","hello"),
+          ("/enbquery","enbquery"),
           ("/index","index"),
        )
 
@@ -13,7 +16,7 @@ wsgi application type is function
 def def_my_app(environ,start_response):
     status200 = '200 OK'
     status404 = '404 NOT FOUND'
-    respheader = [('Content-type','text/plain')]
+    respheader = [('Content-type','text/html')]
     path = environ['PATH_INFO']
     method = environ['REQUEST_METHOD']
 
@@ -39,7 +42,7 @@ class class_my_app(object):
         self.environ = environ
         self.start_response = start_response
         self.urls = urls
-        self.respheader = [('Content-type','text/plain')]
+        self.respheader = [('Content-type','text/html')]
         self._status = '200 OK'
     def __iter__(self):
         result = self.delegate()
@@ -53,16 +56,24 @@ class class_my_app(object):
         path = self.environ['PATH_INFO']
         method = self.environ['REQUEST_METHOD']
 
+        print path,method
         for pattern, name in self.urls:
             m = re.match('^' + pattern + '$', path)
             if m:
                 args = m.groups()
+                #print "args : ",args
                 funcname = method.upper()
                 klass = globals().get(name.upper())
                 if hasattr(klass,funcname):
                     func = getattr(klass,funcname)
                     self._status = '200 OK'
-                    return func(klass(),*args)
+                    if funcname == 'POST':
+                        data_size = int(self.environ.get('CONTENT_LENGTH',0))
+                        data_body = self.environ['wsgi.input'].read(data_size)
+                        d = parse_qs(data_body,keep_blank_values=1)
+                        return func(klass(),d)
+                    else:
+                        return func(klass(),*args)
 
         return self.notfound()
     def notfound(self):
