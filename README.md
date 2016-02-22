@@ -6,3 +6,4 @@ sometime, I need to maintain a lab resource spreadsheet maunally, so I think why
 Issues remain:
 1. can't display chinese when chinese words was in html
 2. response.py --> class HELLO --> GET --> can't handle exception scenario
+3. not support "TAB","ENTER"

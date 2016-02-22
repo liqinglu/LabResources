@@ -58,7 +58,7 @@ width: 90%;
 	<tr>
       <td align="center" bgcolor="#FFFFFF"><input type="checkbox" name="checkbox2" value="checkbox" /></td>  
 	  {% for col in cols %}
-	  <td bgcolor="#FFFFFF">{{ enbinfo[row][col] }}</td>  
+	  <td onkeydown="toNext()" bgcolor="#FFFFFF">{{ enbinfo[row][col] }}</td>  
 	  {% endfor %}
 	</tr>
 	{% endfor %}
@@ -99,6 +99,10 @@ for(var j=0;j<row.cells.length; j++){
   
 }  
   
+function toNext(){
+  alert("null");
+}
+
 function EditCell(element, editType){  
   
 var editType = element.getAttribute("EditType");  
@@ -242,10 +246,12 @@ function GetTableData(table){
 	  
 	for(var i=1; i<table.rows.length;i++){
 		var rowdata = GetRowData(tabProduct.rows[i]);
+		//alert("rowdata "+i);
 		for(var elem in rowdata){
 			var hideInput = document.createElement("input");  
 		    hideInput.type = "hidden";  
 		    hideInput.name = elem;  
+			//alert("cc"+rowdata[elem]);
 		    hideInput.value = rowdata[elem];
 			//alert("hideinput = "+rowdata[elem]);
 		    tempForm.appendChild(hideInput);

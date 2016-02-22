@@ -3,6 +3,7 @@
 from jinja2 import Environment,FileSystemLoader
 import pickle
 import sys
+import shutil
 
 class INDEX(object):
     def GET(self):
@@ -11,6 +12,7 @@ class INDEX(object):
 class ENBQUERY(object):
     def __init__(self):
         self.filedata = 'enb_data.txt'
+        self.backupdata = 'enb_backup.txt'
     def GET(self):
         env = Environment(loader=FileSystemLoader('./template'))
         try:
@@ -25,6 +27,7 @@ class ENBQUERY(object):
             return tmpt.render(reason=sys.exc_info)
     def POST(self,dt):
         data = self.transformdata(dt)
+        shutil.copy(self.filedata,self.backupdata)
         #loaddata = []
         #singledata = []
         #print data.decode()
