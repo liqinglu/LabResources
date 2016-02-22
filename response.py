@@ -4,6 +4,10 @@ from jinja2 import Environment,FileSystemLoader
 import pickle
 import sys
 import shutil
+import os
+import time
+
+LOCKFILE = ".lockdata"
 
 class INDEX(object):
     def GET(self):
@@ -27,7 +31,6 @@ class ENBQUERY(object):
             return tmpt.render(reason=sys.exc_info)
     def POST(self,dt):
         data = self.transformdata(dt)
-        shutil.copy(self.filedata,self.backupdata)
         #loaddata = []
         #singledata = []
         #print data.decode()
@@ -40,10 +43,16 @@ class ENBQUERY(object):
         #        loaddata.append(singledata)
         #        singledata = []
 
-        output = open(self.filedata,'wb')
-        pickle.dump(data,output)
-        output.close()
-        return "submit successful"
+        if os.path.exists(LOCKFILE): # conflict with others, should wait for a while
+            return "Conflict with others, should wait for a while, refresh the page, then submit your data again"
+        else: # not conflict with others
+            os.mknod(LOCKFILE)
+            shutil.copy(self.filedata,self.backupdata)
+            output = open(self.filedata,'wb')
+            pickle.dump(data,output)
+            output.close()
+            os.remove(LOCKFILE)
+            return "submit successful"
     def transformdata(self,d):
         '''
         {'a':[],'b':[],...} --> [ [],[],... ]

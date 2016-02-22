@@ -6,7 +6,7 @@ aS'enb161'
 p3
 aS'eccm2'
 p4
-aS'qinglul test'
+aS'qinglul test\\r'
 p5
 aS'135.242.110.45'
 p6
